@@ -17,6 +17,7 @@ import LoginScreen from './screens/LoginScreen';
 import DashboardScreen from './screens/DashboardScreen';
 import StationDetailScreen from './screens/StationDetailScreen';
 import PriceEditorScreen from './screens/PriceEditorScreen';
+import { FactoryProvisioningScreen } from './screens/FactoryProvisioningScreen';
 
 // Components
 import LoadingScreen from './components/LoadingScreen';
@@ -90,6 +91,13 @@ const App: React.FC = () => {
               component={AuthGuard(PriceEditorScreen)}
               options={{
                 title: 'Update Prices',
+              }}
+            />
+            <Stack.Screen
+              name="FactoryProvisioning"
+              component={AuthGuard(FactoryProvisioningScreen)}
+              options={{
+                title: '🏭 Factory Provisioning',
               }}
             />
           </Stack.Navigator>

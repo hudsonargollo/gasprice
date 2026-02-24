@@ -1,7 +1,7 @@
 {
-  "name": "fuelprice-pro-mobile",
+  "name": "engefil-connect-mobile",
   "version": "1.0.0",
-  "description": "FuelPrice Pro Mobile Application",
+  "description": "Engefil Connect - Sistema de gerenciamento de postos de combustível",
   "main": "index.js",
   "scripts": {
     "start": "expo start",

@@ -1,30 +1,43 @@
 {
   "expo": {
-    "name": "FuelPrice Pro",
-    "slug": "fuelprice-pro",
+    "name": "Engefil Connect",
+    "slug": "engefil-connect",
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "automatic",
+    "icon": "./assets/icon.png",
     "splash": {
+      "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#0055ff"
+      "backgroundColor": "#1e3a8a"
     },
     "assetBundlePatterns": [
       "**/*"
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.fuelpricepro.mobile"
+      "bundleIdentifier": "com.engefil.connect"
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#0055ff"
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#1e3a8a"
       },
-      "package": "com.fuelpricepro.mobile"
+      "package": "com.engefil.connect",
+      "versionCode": 1,
+      "permissions": [
+        "INTERNET",
+        "ACCESS_NETWORK_STATE"
+      ]
     },
     "platforms": ["ios", "android"],
-    "scheme": "fuelpricepro"
+    "scheme": "engefilconnect",
+    "extra": {
+      "eas": {
+        "projectId": "engefil-connect-2024"
+      }
+    }
   },
-  "name": "FuelPricePro",
-  "displayName": "FuelPrice Pro"
+  "name": "EngefilConnect",
+  "displayName": "Engefil Connect"
 }

@@ -2,7 +2,7 @@
 export interface User {
   id: string;
   username: string;
-  role: 'admin' | 'owner';
+  role: 'admin' | 'owner' | 'client';
   createdAt: string;
   lastLogin: string | null;
 }
@@ -79,6 +79,7 @@ export type RootStackParamList = {
   Dashboard: undefined;
   StationDetail: { stationId: string };
   PriceEditor: { stationId: string };
+  FactoryProvisioning: undefined;
 };
 
 // Redux Store Types

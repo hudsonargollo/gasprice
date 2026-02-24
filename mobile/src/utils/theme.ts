@@ -2,16 +2,17 @@ import { Theme } from '../types';
 
 export const theme: Theme = {
   colors: {
-    primary: '#0055ff', // Primary brand color as specified in requirements
-    secondary: '#6c757d',
-    background: '#f8f9fa',
+    // Cores principais da Engefil
+    primary: '#1e3a8a', // Azul escuro profissional
+    secondary: '#f59e0b', // Amarelo/laranja para destaques
+    background: '#f8fafc',
     surface: '#ffffff',
-    text: '#212529',
-    textSecondary: '#6c757d',
-    error: '#dc3545',
-    success: '#28a745',
-    warning: '#ffc107',
-    border: '#dee2e6',
+    text: '#1e293b',
+    textSecondary: '#64748b',
+    error: '#ef4444',
+    success: '#10b981',
+    warning: '#f59e0b',
+    border: '#e2e8f0',
   },
   spacing: {
     xs: 4,

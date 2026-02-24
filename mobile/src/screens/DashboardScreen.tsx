@@ -16,11 +16,13 @@ import { logoutUser } from '../store/slices/authSlice';
 import { Station, RootStackParamList } from '../types';
 import { theme } from '../utils/theme';
 import { formatStationStatus, formatDate } from '../utils/formatters';
+import { useTranslation } from '../locales';
 import LoadingScreen from '../components/LoadingScreen';
 
 const DashboardScreen: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
+  const { t } = useTranslation();
   
   const { user } = useSelector((state: RootState) => state.auth);
   const { stations, loading, error, lastUpdated } = useSelector(
@@ -35,11 +37,11 @@ const DashboardScreen: React.FC = () => {
   useEffect(() => {
     // Show error alert if fetching fails
     if (error) {
-      Alert.alert('Error', error, [
-        { text: 'OK', onPress: () => dispatch(clearError()) },
+      Alert.alert(t('common.error'), error, [
+        { text: t('common.ok'), onPress: () => dispatch(clearError()) },
       ]);
     }
-  }, [error, dispatch]);
+  }, [error, dispatch, t]);
 
   const handleRefresh = useCallback(() => {
     dispatch(fetchStations());
@@ -51,18 +53,22 @@ const DashboardScreen: React.FC = () => {
 
   const handleLogout = useCallback(() => {
     Alert.alert(
-      'Sign Out',
-      'Are you sure you want to sign out?',
+      t('auth.signOut'),
+      t('auth.signOutConfirm'),
       [
-        { text: 'Cancel', style: 'cancel' },
+        { text: t('auth.cancel'), style: 'cancel' },
         {
-          text: 'Sign Out',
+          text: t('auth.signOut'),
           style: 'destructive',
           onPress: () => dispatch(logoutUser()),
         },
       ]
     );
-  }, [dispatch]);
+  }, [dispatch, t]);
+
+  const handleFactoryProvisioning = useCallback(() => {
+    navigation.navigate('FactoryProvisioning');
+  }, [navigation]);
 
   const renderStationCard = useCallback(({ item }: { item: Station }) => {
     const statusColor = item.isOnline ? theme.colors.success : theme.colors.error;
@@ -118,37 +124,44 @@ const DashboardScreen: React.FC = () => {
 
   const renderEmptyState = useCallback(() => (
     <View style={styles.emptyState}>
-      <Text style={styles.emptyStateTitle}>No Stations Found</Text>
+      <Text style={styles.emptyStateTitle}>{t('dashboard.noStations')}</Text>
       <Text style={styles.emptyStateText}>
         {user?.role === 'admin' 
-          ? 'No stations have been created yet.'
-          : 'You don\'t have access to any stations yet.'}
+          ? t('dashboard.noStationsAdmin')
+          : t('dashboard.noStationsClient')}
       </Text>
       <TouchableOpacity style={styles.refreshButton} onPress={handleRefresh}>
-        <Text style={styles.refreshButtonText}>Refresh</Text>
+        <Text style={styles.refreshButtonText}>{t('dashboard.refresh')}</Text>
       </TouchableOpacity>
     </View>
-  ), [user?.role, handleRefresh]);
+  ), [user?.role, handleRefresh, t]);
 
   if (loading && stations.length === 0) {
-    return <LoadingScreen message="Loading stations..." />;
+    return <LoadingScreen message="Carregando postos..." />;
   }
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <View>
-          <Text style={styles.welcomeText}>Welcome back,</Text>
+          <Text style={styles.welcomeText}>{t('dashboard.welcomeBack')}</Text>
           <Text style={styles.usernameText}>{user?.username}</Text>
         </View>
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Text style={styles.logoutButtonText}>Sign Out</Text>
-        </TouchableOpacity>
+        <View style={styles.headerButtons}>
+          {user?.role === 'admin' && (
+            <TouchableOpacity style={styles.factoryButton} onPress={handleFactoryProvisioning}>
+              <Text style={styles.factoryButtonText}>{t('dashboard.factory')}</Text>
+            </TouchableOpacity>
+          )}
+          <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+            <Text style={styles.logoutButtonText}>{t('auth.signOut')}</Text>
+          </TouchableOpacity>
+        </View>
       </View>
 
       {lastUpdated && (
         <Text style={styles.lastUpdatedText}>
-          Last updated: {formatDate(lastUpdated)}
+          {t('dashboard.lastUpdated')} {formatDate(lastUpdated)}
         </Text>
       )}
 
@@ -194,6 +207,22 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     color: theme.colors.text,
+  },
+  headerButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  factoryButton: {
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
+    borderRadius: 6,
+    backgroundColor: theme.colors.primary,
+  },
+  factoryButtonText: {
+    color: '#FFFFFF',
+    fontSize: 14,
+    fontWeight: '600',
   },
   logoutButton: {
     paddingHorizontal: theme.spacing.md,

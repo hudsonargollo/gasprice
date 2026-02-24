@@ -1,113 +1,231 @@
-# FuelPrice Pro Backend
+# 🏭 Engefil Connect
 
-Backend service for the FuelPrice Pro LED management system. This service provides secure API endpoints for managing gas station LED pricing displays through a VPN infrastructure.
+Sistema completo de gerenciamento de postos de combustível com painéis LED inteligentes.
 
-## Features
+## 🎯 Visão Geral
 
-- **Secure Authentication**: JWT-based authentication with role-based access control
-- **Station Management**: CRUD operations for gas stations and LED panels
-- **Price Updates**: Real-time price updates via Huidu protocol over TCP
-- **VPN Monitoring**: Heartbeat monitoring for station connectivity
-- **Data Persistence**: PostgreSQL database with comprehensive logging
+O Engefil Connect é uma solução profissional para gestão de postos de combustível que integra:
+- **Roteadores MikroTik** para conectividade VPN
+- **Controladores Huidu HD-W60** para painéis LED
+- **Sistema de Factory Provisioning** para configuração automatizada
+- **App Mobile** para controle em tempo real
 
-## Prerequisites
+## 🏗️ Arquitetura
 
-- Node.js 18+ 
-- PostgreSQL 12+
+### Sistema Multi-Local
+```
+Central Server → VPN → MikroTik Router → Huidu Controller → LED Panels
+```
+
+Cada local possui:
+- 1 Roteador MikroTik (conectividade VPN)
+- 1 Controlador Huidu HD-W60 (controle LED)
+- N Painéis LED (exibição de preços)
+
+### Tecnologias
+
+**Backend:**
+- Node.js + TypeScript
+- PostgreSQL
+- Docker
+- VPN OpenVPN
+
+**Mobile:**
+- React Native + Expo
+- Redux Toolkit
 - TypeScript
-- A configured VPN network (WireGuard recommended)
+- Interface em Português Brasileiro
 
-## Installation
+**Dispositivos:**
+- MikroTik RouterOS
+- Huidu HD-W60 LED Controller
+- Protocolo TCP customizado
 
-1. Clone the repository
-2. Install dependencies:
-   ```bash
-   npm install
-   ```
+## 🚀 Funcionalidades
 
-3. Copy environment configuration:
-   ```bash
-   cp .env.example .env
-   ```
+### 🏭 Factory Provisioning
+- Wizard completo de configuração
+- Suporte multi-local
+- Teste automático de dispositivos
+- Geração de credenciais
+- QR Code para setup
 
-4. Configure your database and other settings in `.env`
+### 📱 Mobile App
+- Interface em português brasileiro
+- Controle de preços em tempo real
+- Monitoramento de status
+- Gestão multi-local
+- Tema profissional Engefil
 
-5. Set up PostgreSQL database:
-   ```sql
-   CREATE DATABASE fuelprice_pro;
-   CREATE USER fuelprice_user WITH PASSWORD 'your_secure_password';
-   GRANT ALL PRIVILEGES ON DATABASE fuelprice_pro TO fuelprice_user;
-   ```
+### 🔧 Gestão de Dispositivos
+- Configuração automática MikroTik
+- Controle de painéis Huidu
+- Monitoramento VPN
+- Logs e diagnósticos
 
-## Development
+## 📦 Instalação
 
-Start the development server:
+### Pré-requisitos
+- Node.js 16+
+- Docker & Docker Compose
+- PostgreSQL
+- Expo CLI
+
+### Backend
 ```bash
-npm run dev
+# Instalar dependências
+npm install
+
+# Configurar ambiente
+cp .env.example .env
+
+# Iniciar com Docker
+docker-compose up -d
+
+# Executar migrações
+npm run migrate
 ```
 
-Run tests:
+### Mobile
 ```bash
-npm test
-```
+cd mobile
 
-Build for production:
-```bash
-npm run build
+# Instalar dependências
+npm install
+
+# Iniciar desenvolvimento
 npm start
+
+# Build para produção
+eas build --platform android
 ```
 
-## API Endpoints
+## 🔧 Configuração
 
-### Health Check
-- `GET /health` - Server health status
+### Variáveis de Ambiente
+```env
+# Database
+DATABASE_URL=postgresql://user:pass@localhost:5432/engefil_connect
 
-### Authentication (Coming in Task 2)
-- `POST /api/auth/login` - User login
-- `POST /api/auth/logout` - User logout
+# API
+API_PORT=3000
+JWT_SECRET=your-secret-key
 
-### Stations (Coming in Task 3)
-- `GET /api/stations` - List user's stations
-- `GET /api/stations/:id` - Get station details
+# VPN
+VPN_SERVER=your-vpn-server.com
+VPN_PORT=1194
+```
 
-### Price Updates (Coming in Task 7)
-- `POST /api/prices/update` - Update LED panel prices
+### Factory Provisioning
+1. Acesse como admin (`admin` / `admin123`)
+2. Use o botão "🏭 Fábrica" no dashboard
+3. Siga o wizard de 3 etapas
+4. Teste dispositivos antes de finalizar
 
-## Database Schema
+## 📱 Google Play Store
 
-The system uses PostgreSQL with the following main tables:
+### Preparação
+```bash
+# Configurar EAS
+eas build:configure
 
-- **users**: User accounts with role-based access
-- **stations**: Gas station locations and VPN configuration
-- **led_panels**: Individual LED display panels per station
-- **price_update_logs**: Audit trail for all price changes
+# Build para produção
+eas build --platform android --profile production
 
-## Architecture
+# Submit para Play Store
+eas submit --platform android
+```
 
-The backend follows a layered architecture:
+### Informações da Loja
+- **Nome**: Engefil Connect
+- **Categoria**: Negócios
+- **Público**: Profissional
+- **Descrição**: Sistema de gerenciamento de postos de combustível
 
-- **Routes**: Express.js route handlers
-- **Services**: Business logic and external integrations
-- **Models**: Data access layer
-- **Middleware**: Authentication, validation, error handling
-- **Utils**: Shared utilities and helpers
+## 🔐 Segurança
 
-## Security
+- Autenticação JWT
+- Comunicação VPN criptografada
+- Validação de dispositivos por MAC/Serial
+- Protocolo TCP com CRC16
+- Firewall configurado
 
-- All API endpoints require authentication (except health check)
-- Role-based access control (Admin vs Owner)
-- Input validation and sanitization
-- Secure password hashing with bcrypt
-- JWT tokens for session management
-- Comprehensive audit logging
+## 📊 Monitoramento
 
-## Monitoring
+- Status VPN em tempo real
+- Health checks automáticos
+- Logs estruturados
+- Métricas de performance
+- Alertas de falha
 
-- Structured logging with Winston
-- Health check endpoint for load balancers
-- Database connection monitoring
-- VPN tunnel heartbeat monitoring
+## 🛠️ Desenvolvimento
 
-## License
+### Estrutura do Projeto
+```
+├── src/                 # Backend API
+│   ├── models/         # Modelos de dados
+│   ├── routes/         # Endpoints API
+│   ├── services/       # Lógica de negócio
+│   └── utils/          # Utilitários
+├── mobile/             # App React Native
+│   ├── src/
+│   │   ├── screens/    # Telas do app
+│   │   ├── services/   # Serviços API
+│   │   └── locales/    # Traduções PT-BR
+└── deploy/             # Scripts de deploy
+```
 
-MIT License - see LICENSE file for details
+### Scripts Úteis
+```bash
+# Desenvolvimento
+npm run dev              # Iniciar backend
+npm run mobile          # Iniciar mobile app
+
+# Produção
+npm run build           # Build backend
+npm run deploy          # Deploy completo
+
+# Testes
+npm test                # Executar testes
+npm run lint            # Verificar código
+```
+
+## 🌐 Deploy
+
+### VPS (Backend)
+```bash
+# Deploy automático
+./deploy-complete.sh
+
+# Manual
+ssh root@your-vps
+cd /opt/applications/engefil-connect
+docker-compose up -d
+```
+
+### Mobile (Play Store)
+```bash
+cd mobile
+eas build --platform android --profile production
+eas submit --platform android
+```
+
+## 📞 Suporte
+
+### Documentação
+- [Arquitetura Técnica](TECHNICAL-ARCHITECTURE.md)
+- [Guia de Deploy](DEPLOYMENT-GUIDE.md)
+- [Manual do Usuário](USER-MANUAL.md)
+
+### Contato
+- **Empresa**: Engefil
+- **Sistema**: Engefil Connect
+- **Versão**: 1.0.0
+
+## 📄 Licença
+
+Propriedade da Engefil. Todos os direitos reservados.
+
+---
+
+**Engefil Connect v1.0.0** - Sistema profissional de gerenciamento de postos de combustível.
