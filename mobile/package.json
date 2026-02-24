@@ -1,7 +1,7 @@
 {
   "name": "engefil-connect-mobile",
   "version": "1.0.0",
-  "description": "Engefil Connect - Sistema de gerenciamento de postos de combustível",
+  "description": "Engefil Connect - Controle remoto de placas de preço",
   "main": "index.js",
   "scripts": {
     "start": "expo start",

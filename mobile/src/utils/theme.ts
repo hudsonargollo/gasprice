@@ -2,17 +2,18 @@ import { Theme } from '../types';
 
 export const theme: Theme = {
   colors: {
-    // Cores principais da Engefil
-    primary: '#1e3a8a', // Azul escuro profissional
-    secondary: '#f59e0b', // Amarelo/laranja para destaques
-    background: '#f8fafc',
+    // Cores principais da Engefil - Laranja como cor primária
+    primary: '#f59e0b', // Laranja Engefil como cor principal
+    secondary: '#ea580c', // Laranja mais escuro para variações
+    background: '#fefbf3', // Fundo levemente alaranjado
     surface: '#ffffff',
     text: '#1e293b',
     textSecondary: '#64748b',
     error: '#ef4444',
     success: '#10b981',
     warning: '#f59e0b',
-    border: '#e2e8f0',
+    border: '#fed7aa', // Borda laranja suave
+    accent: '#1e3a8a', // Azul como cor de apoio
   },
   spacing: {
     xs: 4,
@@ -46,11 +47,11 @@ export const darkTheme: Theme = {
   ...theme,
   colors: {
     ...theme.colors,
-    background: '#121212',
-    surface: '#1e1e1e',
+    background: '#1a0f0a', // Fundo escuro com tom alaranjado
+    surface: '#2d1b13', // Superfície escura alaranjada
     text: '#ffffff',
-    textSecondary: '#b0b0b0',
-    border: '#333333',
+    textSecondary: '#d1d5db',
+    border: '#92400e', // Borda laranja escura
   },
 };
 

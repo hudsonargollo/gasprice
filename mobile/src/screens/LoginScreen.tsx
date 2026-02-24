@@ -73,7 +73,7 @@ const LoginScreen: React.FC = () => {
             <Text style={styles.logoSubtext}>Connect</Text>
           </View>
           <Text style={styles.tagline}>
-            Sistema de Gerenciamento de Postos
+            Controle remoto de placas de preço
           </Text>
         </View>
 
@@ -128,7 +128,7 @@ const LoginScreen: React.FC = () => {
             Engefil Connect v1.0.0
           </Text>
           <Text style={styles.footerSubtext}>
-            Desenvolvido para gestão profissional de postos
+            Controle profissional de placas de preço
           </Text>
         </View>
       </ScrollView>

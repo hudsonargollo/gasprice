@@ -9,7 +9,7 @@
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#1e3a8a"
+      "backgroundColor": "#f59e0b"
     },
     "assetBundlePatterns": [
       "**/*"
@@ -21,7 +21,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#1e3a8a"
+        "backgroundColor": "#f59e0b"
       },
       "package": "com.engefil.connect",
       "versionCode": 1,

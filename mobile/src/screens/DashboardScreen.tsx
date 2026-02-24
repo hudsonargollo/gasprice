@@ -146,6 +146,7 @@ const DashboardScreen: React.FC = () => {
         <View>
           <Text style={styles.welcomeText}>{t('dashboard.welcomeBack')}</Text>
           <Text style={styles.usernameText}>{user?.username}</Text>
+          <Text style={styles.subtitleText}>{t('dashboard.subtitle')}</Text>
         </View>
         <View style={styles.headerButtons}>
           {user?.role === 'admin' && (
@@ -207,6 +208,11 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     color: theme.colors.text,
+  },
+  subtitleText: {
+    fontSize: 12,
+    color: theme.colors.textSecondary,
+    marginTop: 2,
   },
   headerButtons: {
     flexDirection: 'row',

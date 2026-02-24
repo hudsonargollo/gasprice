@@ -74,7 +74,7 @@ const App: React.FC = () => {
               name="Dashboard"
               component={AuthGuard(DashboardScreen)}
               options={{
-                title: 'FuelPrice Pro',
+                title: 'Engefil Connect',
                 headerLeft: () => null, // Disable back button
                 gestureEnabled: false, // Disable swipe back
               }}
@@ -83,21 +83,21 @@ const App: React.FC = () => {
               name="StationDetail"
               component={AuthGuard(StationDetailScreen)}
               options={{
-                title: 'Station Details',
+                title: 'Detalhes do Posto',
               }}
             />
             <Stack.Screen
               name="PriceEditor"
               component={AuthGuard(PriceEditorScreen)}
               options={{
-                title: 'Update Prices',
+                title: 'Atualizar Preços',
               }}
             />
             <Stack.Screen
               name="FactoryProvisioning"
               component={AuthGuard(FactoryProvisioningScreen)}
               options={{
-                title: '🏭 Factory Provisioning',
+                title: '🏭 Provisionamento de Fábrica',
               }}
             />
           </Stack.Navigator>

@@ -138,6 +138,7 @@ export interface Theme {
     success: string;
     warning: string;
     border: string;
+    accent: string;
   };
   spacing: {
     xs: number;

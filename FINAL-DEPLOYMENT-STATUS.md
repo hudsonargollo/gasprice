@@ -17,9 +17,10 @@
 ### 3. Mobile App - Engefil Connect
 - ✅ Rebranding completo para "Engefil Connect"
 - ✅ Interface 100% em português brasileiro
-- ✅ Tema profissional com cores Engefil (azul #1e3a8a, laranja #f59e0b)
+- ✅ Tema profissional com laranja Engefil (#f59e0b) como cor primária
 - ✅ Todas as telas traduzidas (Login, Dashboard, Factory Provisioning, Station Detail)
 - ✅ Configuração EAS para Google Play Store
+- ✅ Descrição atualizada: "Controle remoto de placas de preço"
 - ✅ App rodando localmente na porta 8082
 
 ### 4. Sistema Técnico Completo
@@ -49,8 +50,10 @@ eas build --platform android --profile production
 - **Nome do App**: Engefil Connect
 - **Package ID**: com.engefil.connect
 - **Versão**: 1.0.0
+- **Descrição**: Controle remoto de placas de preço
 - **Categoria**: Negócios
 - **Público**: Profissional/Empresarial
+- **Cor Principal**: Laranja Engefil (#f59e0b)
 
 ## 🎯 FUNCIONALIDADES IMPLEMENTADAS:
 

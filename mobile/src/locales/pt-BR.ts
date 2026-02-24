@@ -16,6 +16,7 @@ export const ptBR = {
   // Dashboard
   dashboard: {
     title: 'Engefil Connect',
+    subtitle: 'Controle remoto de placas de preço',
     welcomeBack: 'Bem-vindo de volta,',
     noStations: 'Nenhum Posto Encontrado',
     noStationsAdmin: 'Nenhum posto foi criado ainda.',
