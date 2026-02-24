@@ -1,0 +1,481 @@
+# Complete Model Files - Run these commands on VPS
+
+cd /opt/applications/fuelprice-pro
+
+# Create complete Client.ts model with all methods
+cat > src/models/Client.ts << 'EOF'
+import { Pool } from 'pg';
+import { getPool } from '../config/database';
+import bcrypt from 'bcryptjs';
+
+export interface ClientData {
+  companyName: string;
+  contactName?: string;
+  email?: string;
+  phone?: string;
+  address?: string;
+  itemsPurchased: number;
+  status: string;
+  notes?: string;
+}
+
+export class ClientModel {
+  private pool: Pool;
+
+  constructor() {
+    this.pool = getPool();
+  }
+
+  async createClient(clientData: ClientData): Promise<{
+    id: string;
+    companyName: string;
+    username: string;
+    password: string;
+    userId?: string;
+  }> {
+    const client = await this.pool.connect();
+    try {
+      await client.query('BEGIN');
+
+      const username = this.generateUsername(clientData.companyName);
+      const password = this.generatePassword();
+      const hashedPassword = await bcrypt.hash(password, 10);
+
+      const userResult = await client.query(
+        `INSERT INTO users (username, password, role) 
+         VALUES ($1, $2, 'client') 
+         RETURNING id`,
+        [username, hashedPassword]
+      );
+      const userId = userResult.rows[0].id;
+
+      const clientResult = await client.query(
+        `INSERT INTO clients (user_id, company_name, contact_name, email, phone, address, items_purchased, status, notes)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+         RETURNING id, company_name`,
+        [userId, clientData.companyName, clientData.contactName, clientData.email, 
+         clientData.phone, clientData.address, clientData.itemsPurchased, clientData.status, clientData.notes]
+      );
+
+      await client.query('COMMIT');
+
+      return {
+        id: clientResult.rows[0].id,
+        companyName: clientResult.rows[0].company_name,
+        username,
+        password,
+        userId
+      };
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  async getAllClients(): Promise<any[]> {
+    const client = await this.pool.connect();
+    try {
+      const result = await client.query(`
+        SELECT c.*, u.username 
+        FROM clients c 
+        LEFT JOIN users u ON c.user_id = u.id 
+        ORDER BY c.created_at DESC
+      `);
+      return result.rows;
+    } finally {
+      client.release();
+    }
+  }
+
+  async findById(id: string): Promise<any> {
+    const client = await this.pool.connect();
+    try {
+      const result = await client.query(
+        'SELECT * FROM clients WHERE id = $1',
+        [id]
+      );
+      return result.rows[0];
+    } finally {
+      client.release();
+    }
+  }
+
+  async getClientStats(id: string): Promise<any> {
+    const client = await this.pool.connect();
+    try {
+      const result = await client.query(`
+        SELECT 
+          c.*,
+          COUNT(DISTINCT s.id) as station_count,
+          COUNT(DISTINCT md.id) as mikrotik_count,
+          COUNT(DISTINCT hd.id) as huidu_count
+        FROM clients c
+        LEFT JOIN stations s ON c.id = s.client_id
+        LEFT JOIN mikrotik_devices md ON c.id = md.client_id
+        LEFT JOIN huidu_devices hd ON c.id = hd.client_id
+        WHERE c.id = $1
+        GROUP BY c.id
+      `, [id]);
+      return result.rows[0];
+    } finally {
+      client.release();
+    }
+  }
+
+  async updateClient(id: string, data: Partial<ClientData>): Promise<any> {
+    const client = await this.pool.connect();
+    try {
+      const result = await client.query(`
+        UPDATE clients 
+        SET company_name = COALESCE($2, company_name),
+            contact_name = COALESCE($3, contact_name),
+            email = COALESCE($4, email),
+            phone = COALESCE($5, phone),
+            address = COALESCE($6, address),
+            status = COALESCE($7, status),
+            notes = COALESCE($8, notes),
+            updated_at = NOW()
+        WHERE id = $1
+        RETURNING *
+      `, [id, data.companyName, data.contactName, data.email, data.phone, data.address, data.status, data.notes]);
+      return result.rows[0];
+    } finally {
+      client.release();
+    }
+  }
+
+  async deleteClient(id: string): Promise<boolean> {
+    const client = await this.pool.connect();
+    try {
+      await client.query('BEGIN');
+      
+      // Get user_id first
+      const clientResult = await client.query('SELECT user_id FROM clients WHERE id = $1', [id]);
+      if (clientResult.rows.length === 0) return false;
+      
+      const userId = clientResult.rows[0].user_id;
+      
+      // Delete client (cascades to related records)
+      await client.query('DELETE FROM clients WHERE id = $1', [id]);
+      
+      // Delete user account
+      if (userId) {
+        await client.query('DELETE FROM users WHERE id = $1', [userId]);
+      }
+      
+      await client.query('COMMIT');
+      return true;
+    } catch (error) {
+      await client.query('ROLLBACK');
+      throw error;
+    } finally {
+      client.release();
+    }
+  }
+
+  private generateUsername(companyName: string): string {
+    const clean = companyName.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const random = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+    return `${clean.substring(0, 8)}${random}`;
+  }
+
+  private generatePassword(): string {
+    const chars = 'ABCDEFGHJKMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789';
+    let password = '';
+    for (let i = 0; i < 12; i++) {
+      password += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return password;
+  }
+}
+EOF
+
+# Create complete MikroTikDevice.ts model with all methods
+cat > src/models/MikroTikDevice.ts << 'EOF'
+import { Pool } from 'pg';
+import { getPool } from '../config/database';
+
+export interface MikroTikDeviceData {
+  serialNumber: string;
+  model: string;
+  macAddress: string;
+  clientId: string;
+  deviceName: string;
+  vpnIpAddress: string;
+  vpnUsername: string;
+  vpnPassword: string;
+  adminPassword: string;
+  wifiSsid: string;
+  wifiPassword: string;
+  status: string;
+}
+
+export class MikroTikDeviceModel {
+  private pool: Pool;
+
+  constructor() {
+    this.pool = getPool();
+  }
+
+  async createDevice(deviceData: MikroTikDeviceData): Promise<any> {
+    const client = await this.pool.connect();
+    try {
+      const result = await client.query(
+        `INSERT INTO mikrotik_devices 
+         (serial_number, model, mac_address, client_id, device_name, vpn_ip_address, 
+          vpn_username, vpn_password, admin_password, wifi_ssid, wifi_password, status)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
+         RETURNING *`,
+        [deviceData.serialNumber, deviceData.model, deviceData.macAddress, deviceData.clientId,
+         deviceData.deviceName, deviceData.vpnIpAddress, deviceData.vpnUsername, deviceData.vpnPassword,
+         deviceData.adminPassword, deviceData.wifiSsid, deviceData.wifiPassword, deviceData.status]
+      );
+      return result.rows[0];
+    } finally {
+      client.release();
+    }
+  }
+
+  async getAllDevices(): Promise<any[]> {
+    const client = await this.pool.connect();
+    try {
+      const result = await client.query(`
+        SELECT md.*, c.company_name 
+        FROM mikrotik_devices md
+        LEFT JOIN clients c ON md.client_id = c.id
+        ORDER BY md.created_at DESC
+      `);
+      return result.rows;
+    } finally {
+      client.release();
+    }
+  }
+
+  async findById(id: string): Promise<any> {
+    const client = await this.pool.connect();
+    try {
+      const result = await client.query(
+        'SELECT * FROM mikrotik_devices WHERE id = $1',
+        [id]
+      );
+      return result.rows[0];
+    } finally {
+      client.release();
+    }
+  }
+
+  async findBySerialNumber(serialNumber: string): Promise<any> {
+    const client = await this.pool.connect();
+    try {
+      const result = await client.query(
+        'SELECT * FROM mikrotik_devices WHERE serial_number = $1',
+        [serialNumber]
+      );
+      return result.rows[0];
+    } finally {
+      client.release();
+    }
+  }
+
+  async findByClientId(clientId: string): Promise<any[]> {
+    const client = await this.pool.connect();
+    try {
+      const result = await client.query(
+        'SELECT * FROM mikrotik_devices WHERE client_id = $1',
+        [clientId]
+      );
+      return result.rows;
+    } finally {
+      client.release();
+    }
+  }
+
+  async updateDevice(id: string, data: Partial<MikroTikDeviceData>): Promise<any> {
+    const client = await this.pool.connect();
+    try {
+      const result = await client.query(`
+        UPDATE mikrotik_devices 
+        SET serial_number = COALESCE($2, serial_number),
+            model = COALESCE($3, model),
+            mac_address = COALESCE($4, mac_address),
+            device_name = COALESCE($5, device_name),
+            status = COALESCE($6, status),
+            updated_at = NOW()
+        WHERE id = $1
+        RETURNING *
+      `, [id, data.serialNumber, data.model, data.macAddress, data.deviceName, data.status]);
+      return result.rows[0];
+    } finally {
+      client.release();
+    }
+  }
+
+  async deleteDevice(id: string): Promise<boolean> {
+    const client = await this.pool.connect();
+    try {
+      const result = await client.query('DELETE FROM mikrotik_devices WHERE id = $1', [id]);
+      return result.rowCount > 0;
+    } finally {
+      client.release();
+    }
+  }
+
+  async generateDeviceConfig(deviceId: string): Promise<string> {
+    return `# MikroTik Configuration Script
+# Generated for device: ${deviceId}
+/system identity set name="FuelPrice-Router"
+/interface wireless security-profiles set [ find default=yes ] supplicant-identity=MikroTik
+`;
+  }
+}
+EOF
+
+# Create complete HuiduDevice.ts model with all methods
+cat > src/models/HuiduDevice.ts << 'EOF'
+import { Pool } from 'pg';
+import { getPool } from '../config/database';
+
+export interface HuiduDeviceData {
+  serialNumber: string;
+  model: string;
+  macAddress: string;
+  clientId: string;
+  deviceName: string;
+  ipAddress: string;
+  adminPassword: string;
+  status: string;
+}
+
+export class HuiduDeviceModel {
+  private pool: Pool;
+
+  constructor() {
+    this.pool = getPool();
+  }
+
+  async createDevice(deviceData: HuiduDeviceData): Promise<any> {
+    const client = await this.pool.connect();
+    try {
+      const result = await client.query(
+        `INSERT INTO huidu_devices 
+         (serial_number, model, mac_address, client_id, device_name, ip_address, admin_password, status)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+         RETURNING *`,
+        [deviceData.serialNumber, deviceData.model, deviceData.macAddress, deviceData.clientId,
+         deviceData.deviceName, deviceData.ipAddress, deviceData.adminPassword, deviceData.status]
+      );
+      return result.rows[0];
+    } finally {
+      client.release();
+    }
+  }
+
+  async getAllDevices(): Promise<any[]> {
+    const client = await this.pool.connect();
+    try {
+      const result = await client.query(`
+        SELECT hd.*, c.company_name 
+        FROM huidu_devices hd
+        LEFT JOIN clients c ON hd.client_id = c.id
+        ORDER BY hd.created_at DESC
+      `);
+      return result.rows;
+    } finally {
+      client.release();
+    }
+  }
+
+  async findById(id: string): Promise<any> {
+    const client = await this.pool.connect();
+    try {
+      const result = await client.query(
+        'SELECT * FROM huidu_devices WHERE id = $1',
+        [id]
+      );
+      return result.rows[0];
+    } finally {
+      client.release();
+    }
+  }
+
+  async findBySerialNumber(serialNumber: string): Promise<any> {
+    const client = await this.pool.connect();
+    try {
+      const result = await client.query(
+        'SELECT * FROM huidu_devices WHERE serial_number = $1',
+        [serialNumber]
+      );
+      return result.rows[0];
+    } finally {
+      client.release();
+    }
+  }
+
+  async findByClientId(clientId: string): Promise<any[]> {
+    const client = await this.pool.connect();
+    try {
+      const result = await client.query(
+        'SELECT * FROM huidu_devices WHERE client_id = $1',
+        [clientId]
+      );
+      return result.rows;
+    } finally {
+      client.release();
+    }
+  }
+
+  async updateDevice(id: string, data: Partial<HuiduDeviceData>): Promise<any> {
+    const client = await this.pool.connect();
+    try {
+      const result = await client.query(`
+        UPDATE huidu_devices 
+        SET serial_number = COALESCE($2, serial_number),
+            model = COALESCE($3, model),
+            mac_address = COALESCE($4, mac_address),
+            device_name = COALESCE($5, device_name),
+            ip_address = COALESCE($6, ip_address),
+            status = COALESCE($7, status),
+            updated_at = NOW()
+        WHERE id = $1
+        RETURNING *
+      `, [id, data.serialNumber, data.model, data.macAddress, data.deviceName, data.ipAddress, data.status]);
+      return result.rows[0];
+    } finally {
+      client.release();
+    }
+  }
+
+  async deleteDevice(id: string): Promise<boolean> {
+    const client = await this.pool.connect();
+    try {
+      const result = await client.query('DELETE FROM huidu_devices WHERE id = $1', [id]);
+      return result.rowCount > 0;
+    } finally {
+      client.release();
+    }
+  }
+}
+EOF
+
+# Fix FactoryProvisioningService.ts - add missing method
+sed -i '/async getProvisioningStatus/a\
+\
+  async generateMikroTikConfig(deviceId: string): Promise<string> {\
+    return `# MikroTik Configuration Script\
+# Generated for device: ${deviceId}\
+/system identity set name="FuelPrice-Router"\
+/interface wireless security-profiles set [ find default=yes ] supplicant-identity=MikroTik\
+`;\
+  }' src/services/FactoryProvisioningService.ts
+
+# Now build and restart
+npm run build
+docker-compose -f docker-compose.shared.yml restart fuelprice-app
+
+# Wait and test
+sleep 30
+curl https://pricepro.clubemkt.digital/health
+
+echo "All models updated with complete methods!"

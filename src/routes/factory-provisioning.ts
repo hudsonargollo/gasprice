@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import Joi from 'joi';
 import { FactoryProvisioningService, ProvisioningOrder } from '../services/FactoryProvisioningService';
+import { MikroTikDeviceModel } from '../models/MikroTikDevice';
 import { authenticate, requireAdmin } from '../middleware/auth';
 import { logger } from '../utils/logger';
 
@@ -13,6 +14,15 @@ function getProvisioningService(): FactoryProvisioningService {
     provisioningService = new FactoryProvisioningService();
   }
   return provisioningService;
+}
+
+// Lazy-load MikroTik model
+let mikrotikModel: MikroTikDeviceModel | null = null;
+function getMikroTikModel(): MikroTikDeviceModel {
+  if (!mikrotikModel) {
+    mikrotikModel = new MikroTikDeviceModel();
+  }
+  return mikrotikModel;
 }
 
 // Validation schemas
@@ -246,7 +256,7 @@ router.get('/config/:clientId', async (req: Request, res: Response): Promise<voi
         `.trim()
       },
       mikrotikConfig: status.devices.mikrotik.length > 0 ? 
-        await getProvisioningService().generateMikroTikConfig(status.devices.mikrotik[0].id) : null,
+        await getMikroTikModel().generateDeviceConfig(status.devices.mikrotik[0].id) : null,
       huiduConfig: status.devices.huidu.length > 0 ? {
         ipAddress: status.devices.huidu[0].ipAddress,
         adminPassword: status.devices.huidu[0].adminPassword,

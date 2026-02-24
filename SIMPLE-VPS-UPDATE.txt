@@ -1,0 +1,22 @@
+# SIMPLE VPS UPDATE STEPS
+
+# Step 1: Go to app directory
+cd /opt/applications/fuelprice-pro
+
+# Step 2: Get latest code
+git pull origin main
+
+# Step 3: Install dependencies
+npm install
+
+# Step 4: Build app
+npm run build
+
+# Step 5: Restart app
+docker-compose -f docker-compose.shared.yml restart fuelprice-app
+
+# Step 6: Wait and test
+sleep 30
+curl https://pricepro.clubemkt.digital/health
+
+# That's it! The factory provisioning should now work.

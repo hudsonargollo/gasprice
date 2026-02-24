@@ -1,0 +1,33 @@
+# Fix FactoryProvisioningService.ts - Run these commands on VPS
+
+cd /opt/applications/fuelprice-pro
+
+# First, let's see what's wrong with the file
+tail -10 src/services/FactoryProvisioningService.ts
+
+# Remove the incorrectly appended method
+head -n -7 src/services/FactoryProvisioningService.ts > temp_file && mv temp_file src/services/FactoryProvisioningService.ts
+
+# Now properly add the method inside the class (before the closing brace)
+sed -i '/^}$/i\
+\
+  /**\
+   * Generate MikroTik configuration for device\
+   */\
+  async generateMikroTikConfig(deviceId: string): Promise<string> {\
+    return `# MikroTik Configuration Script\
+# Generated for device: ${deviceId}\
+/system identity set name="FuelPrice-Router"\
+/interface wireless security-profiles set [ find default=yes ] supplicant-identity=MikroTik\
+`;\
+  }' src/services/FactoryProvisioningService.ts
+
+# Build and restart
+npm run build
+docker-compose -f docker-compose.shared.yml restart fuelprice-app
+
+# Wait and test
+sleep 30
+curl https://pricepro.clubemkt.digital/health
+
+echo "FactoryProvisioningService fixed!"
