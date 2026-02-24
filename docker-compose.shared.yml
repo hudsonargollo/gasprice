@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  fuelprice-app:
+    build: .
+    container_name: fuelprice-app
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DB_HOST: shared-postgres
+      DB_PORT: 5432
+      DB_NAME: fuelprice_pro
+      DB_USER: fuelprice_admin
+      DB_PASSWORD: ${FUELPRICE_DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      CORS_ORIGIN: https://fuelprice.${DOMAIN}
+    restart: unless-stopped
+    networks:
+      - shared-infrastructure_shared-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.fuelprice.rule=Host(`pricepro.clubemkt.digital`)"
+      - "traefik.http.routers.fuelprice.tls.certresolver=letsencrypt"
+      - "traefik.http.services.fuelprice.loadbalancer.server.port=3000"
+    depends_on:
+      - db-init
+
+  db-init:
+    image: postgres:15-alpine
+    container_name: fuelprice-db-init
+    environment:
+      PGHOST: shared-postgres
+      PGPORT: 5432
+      PGDATABASE: fuelprice_pro
+      PGUSER: fuelprice_admin
+      PGPASSWORD: ${FUELPRICE_DB_PASSWORD}
+    volumes:
+      - ./database/init-app-schema.sql:/init-schema.sql
+    networks:
+      - shared-infrastructure_shared-network
+    command: >
+      sh -c "
+        echo 'Waiting for PostgreSQL to be ready...'
+        until pg_isready -h shared-postgres -p 5432 -U postgres; do
+          sleep 2
+        done
+        echo 'PostgreSQL is ready. Initializing FuelPrice Pro schema...'
+        psql -f /init-schema.sql
+        echo 'Schema initialization complete.'
+      "
+    restart: "no"
+
+networks:
+  shared-infrastructure_shared-network:
+    external: true

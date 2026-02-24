@@ -1,0 +1,232 @@
+# Manual Deployment Guide for Windows
+
+Since automated password authentication can be tricky on Windows, here's a step-by-step manual deployment guide.
+
+## Step 1: Connect to your VPS
+
+Open PowerShell and connect to your VPS:
+
+```powershell
+ssh root@62.171.137.90
+# Enter password: Engefil1773#
+```
+
+## Step 2: Upload deployment files
+
+In a **new PowerShell window** (keep the SSH session open), run:
+
+```powershell
+# Create deployment package
+tar -czf fuelprice-deployment.tar.gz --exclude=node_modules --exclude=.git --exclude=dist --exclude=temp --exclude=mobile/node_modules --exclude=mobile/.expo --exclude=mobile/android --exclude=logs .
+
+# Upload to VPS
+scp fuelprice-deployment.tar.gz root@62.171.137.90:/tmp/
+# Enter password: Engefil1773#
+```
+
+## Step 3: Extract files on VPS
+
+Back in your **SSH session**, run:
+
+```bash
+cd /tmp
+tar -xzf fuelprice-deployment.tar.gz
+mv fuelprice-deployment /opt/
+cd /opt/fuelprice-deployment
+chmod +x deploy/*.sh
+```
+
+## Step 4: Run the multi-app setup
+
+```bash
+./deploy/multi-app-setup.sh
+```
+
+Wait for this to complete (it will install Docker, Node.js, etc.)
+
+## Step 5: Configure shared infrastructure
+
+```bash
+cd /opt/shared-infrastructure
+cp .env.template .env
+nano .env
+```
+
+Update the .env file with these values:
+
+```bash
+# Shared Infrastructure Environment Variables
+DOMAIN=pricepro.clubemkt.digital
+ACME_EMAIL=admin@pricepro.clubemkt.digital
+
+# PostgreSQL Configuration
+POSTGRES_ROOT_PASSWORD=SecurePostgresPass123!
+FUELPRICE_DB_PASSWORD=SecureFuelPricePass123!
+N8N_DB_PASSWORD=SecureN8NPass123!
+GOWA_DB_PASSWORD=SecureGowaPass123!
+
+# Redis Configuration
+REDIS_PASSWORD=SecureRedisPass123!
+
+# Traefik Dashboard
+TRAEFIK_DASHBOARD_USER=admin
+TRAEFIK_DASHBOARD_PASSWORD=admin123
+```
+
+Save and exit (Ctrl+X, Y, Enter)
+
+## Step 6: Update database initialization
+
+```bash
+sed -i 's/FUELPRICE_DB_PASSWORD_PLACEHOLDER/SecureFuelPricePass123!/g' postgres/init/01-create-databases.sql
+sed -i 's/N8N_DB_PASSWORD_PLACEHOLDER/SecureN8NPass123!/g' postgres/init/01-create-databases.sql
+sed -i 's/GOWA_DB_PASSWORD_PLACEHOLDER/SecureGowaPass123!/g' postgres/init/01-create-databases.sql
+```
+
+## Step 7: Start shared infrastructure
+
+```bash
+docker-compose up -d
+```
+
+Wait about 30 seconds for services to start.
+
+## Step 8: Deploy FuelPrice Pro
+
+```bash
+cd /opt/fuelprice-deployment
+./deploy/deploy-fuelprice.sh
+```
+
+## Step 9: Configure FuelPrice Pro
+
+```bash
+cd /opt/applications/fuelprice-pro
+nano .env
+```
+
+Add this configuration:
+
+```bash
+# FuelPrice Pro Environment Variables
+NODE_ENV=production
+PORT=3000
+
+# Database Configuration (using shared PostgreSQL)
+DB_HOST=shared-postgres
+DB_PORT=5432
+DB_NAME=fuelprice_pro
+DB_USER=fuelprice_admin
+FUELPRICE_DB_PASSWORD=SecureFuelPricePass123!
+
+# JWT Configuration
+JWT_SECRET=YourSuperSecureJWTSecretKeyHere123456789!
+
+# Domain Configuration
+DOMAIN=pricepro.clubemkt.digital
+
+# CORS Configuration
+CORS_ORIGIN=https://pricepro.clubemkt.digital
+
+# Logging
+LOG_LEVEL=info
+LOG_FILE=logs/production.log
+
+# Rate Limiting
+RATE_LIMIT_WINDOW_MS=900000
+RATE_LIMIT_MAX_REQUESTS=100
+
+# Session Configuration
+SESSION_TIMEOUT_MINUTES=60
+MAX_SESSIONS_PER_USER=5
+```
+
+Save and exit (Ctrl+X, Y, Enter)
+
+## Step 10: Start FuelPrice Pro
+
+```bash
+docker-compose -f docker-compose.shared.yml up -d
+```
+
+## Step 11: Check deployment
+
+```bash
+docker ps
+```
+
+You should see containers running:
+- shared-postgres
+- shared-redis  
+- traefik
+- fuelprice-app
+- fuelprice-db-init (may exit after completing)
+
+## Step 12: Test your application
+
+Visit: https://pricepro.clubemkt.digital
+
+Login with:
+- Username: admin
+- Password: admin123
+
+## Troubleshooting
+
+### Check logs:
+```bash
+cd /opt/applications/fuelprice-pro
+docker-compose -f docker-compose.shared.yml logs -f
+```
+
+### Check shared infrastructure:
+```bash
+cd /opt/shared-infrastructure
+docker-compose logs -f
+```
+
+### Restart services:
+```bash
+# Restart FuelPrice Pro
+cd /opt/applications/fuelprice-pro
+docker-compose -f docker-compose.shared.yml restart
+
+# Restart shared infrastructure
+cd /opt/shared-infrastructure
+docker-compose restart
+```
+
+### Access database:
+```bash
+docker exec -it shared-postgres psql -U fuelprice_admin -d fuelprice_pro
+```
+
+## Mobile App Configuration
+
+The mobile app is already configured to use:
+- API URL: https://pricepro.clubemkt.digital/api
+
+## Adding More Applications
+
+To add n8n or other applications later:
+
+1. Create directory: `mkdir -p /opt/applications/n8n`
+2. Copy example compose file from `/opt/fuelprice-deployment/deploy/example-n8n-compose.yml`
+3. Configure environment variables
+4. Start with `docker-compose up -d`
+
+Your infrastructure is ready to support multiple applications sharing the same PostgreSQL and Redis instances!
+
+## Important Notes
+
+- SSL certificates will be automatically generated by Traefik
+- All passwords should be changed from the examples above
+- Regular backups should be set up for the PostgreSQL data
+- Monitor disk space and logs regularly
+
+## Success Indicators
+
+✅ `docker ps` shows all containers running
+✅ https://pricepro.clubemkt.digital loads successfully  
+✅ You can login with admin/admin123
+✅ Mobile app can connect to the API
+✅ SSL certificate is valid (green lock in browser)

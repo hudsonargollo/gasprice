@@ -1,0 +1,30 @@
+{
+  "expo": {
+    "name": "FuelPrice Pro",
+    "slug": "fuelprice-pro",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#0055ff"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.fuelpricepro.mobile"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#0055ff"
+      },
+      "package": "com.fuelpricepro.mobile"
+    },
+    "platforms": ["ios", "android"],
+    "scheme": "fuelpricepro"
+  },
+  "name": "FuelPricePro",
+  "displayName": "FuelPrice Pro"
+}

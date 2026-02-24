@@ -1,0 +1,40 @@
+# Example Gowa deployment using shared infrastructure
+# Place this in /opt/applications/gowa/docker-compose.yml
+
+version: '3.8'
+
+services:
+  gowa:
+    image: gowa/gowa:latest  # Replace with actual Gowa image
+    container_name: gowa
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      
+      # Database configuration (using shared PostgreSQL)
+      - DATABASE_URL=postgresql://gowa_user:${GOWA_DB_PASSWORD}@shared-postgres:5432/gowa
+      
+      # Redis configuration (using shared Redis)
+      - REDIS_URL=redis://:${REDIS_PASSWORD}@shared-redis:6379
+      
+      # Application specific configuration
+      - JWT_SECRET=${GOWA_JWT_SECRET}
+      - DOMAIN=${DOMAIN}
+      
+    volumes:
+      - gowa_data:/app/data
+    restart: unless-stopped
+    networks:
+      - shared-infrastructure_shared-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.gowa.rule=Host(`gowa.${DOMAIN}`)"
+      - "traefik.http.routers.gowa.tls.certresolver=letsencrypt"
+      - "traefik.http.services.gowa.loadbalancer.server.port=3001"
+
+volumes:
+  gowa_data:
+
+networks:
+  shared-infrastructure_shared-network:
+    external: true

@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: fuelprice-postgres
+    environment:
+      POSTGRES_DB: fuelprice_pro
+      POSTGRES_USER: fuelprice_admin
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+    networks:
+      - fuelprice-network
+
+  app:
+    build: .
+    container_name: fuelprice-app
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_NAME: fuelprice_pro
+      DB_USER: fuelprice_admin
+      DB_PASSWORD: ${DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+    ports:
+      - "3000:3000"
+    depends_on:
+      - postgres
+    restart: unless-stopped
+    networks:
+      - fuelprice-network
+
+volumes:
+  postgres_data:
+
+networks:
+  fuelprice-network:
+    driver: bridge
