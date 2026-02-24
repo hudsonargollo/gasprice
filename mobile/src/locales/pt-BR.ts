@@ -42,6 +42,9 @@ export const ptBR = {
     lastUpdate: 'Última Atualização',
     noLocation: 'Localização não informada',
     noPanels: 'Nenhum painel configurado',
+    loading: 'Carregando detalhes do posto...',
+    vpnIp: 'IP VPN',
+    lastSync: 'Última Sincronização',
   },
 
   // Preços

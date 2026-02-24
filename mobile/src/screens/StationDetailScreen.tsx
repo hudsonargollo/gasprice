@@ -14,6 +14,7 @@ import { fetchStationDetails, clearError } from '../store/slices/stationSlice';
 import { RootStackParamList } from '../types';
 import { theme } from '../utils/theme';
 import { formatStationStatus, formatDate, formatCurrency } from '../utils/formatters';
+import { useTranslation } from '../locales';
 import LoadingScreen from '../components/LoadingScreen';
 
 type StationDetailRouteProp = RouteProp<RootStackParamList, 'StationDetail'>;
@@ -22,6 +23,7 @@ const StationDetailScreen: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
   const route = useRoute<StationDetailRouteProp>();
+  const { t } = useTranslation();
   const { stationId } = route.params;
 
   const { selectedStation, loading, error } = useSelector(
@@ -36,8 +38,8 @@ const StationDetailScreen: React.FC = () => {
   useEffect(() => {
     // Show error alert if fetching fails
     if (error) {
-      Alert.alert('Error', error, [
-        { text: 'OK', onPress: () => dispatch(clearError()) },
+      Alert.alert(t('common.error'), error, [
+        { text: t('common.ok'), onPress: () => dispatch(clearError()) },
       ]);
     }
   }, [error, dispatch]);
@@ -51,7 +53,7 @@ const StationDetailScreen: React.FC = () => {
   }, [dispatch, stationId]);
 
   if (loading || !selectedStation) {
-    return <LoadingScreen message="Loading station details..." />;
+    return <LoadingScreen message={t('station.loading')} />;
   }
 
   const statusColor = selectedStation.isOnline ? theme.colors.success : theme.colors.error;
@@ -73,13 +75,13 @@ const StationDetailScreen: React.FC = () => {
         )}
         
         <View style={styles.infoRow}>
-          <Text style={styles.infoLabel}>VPN IP:</Text>
+          <Text style={styles.infoLabel}>{t('station.vpnIp')}:</Text>
           <Text style={styles.infoValue}>{selectedStation.vpnIpAddress}</Text>
         </View>
         
         {selectedStation.lastSync && (
           <View style={styles.infoRow}>
-            <Text style={styles.infoLabel}>Last Sync:</Text>
+            <Text style={styles.infoLabel}>{t('station.lastSync')}:</Text>
             <Text style={styles.infoValue}>{formatDate(selectedStation.lastSync)}</Text>
           </View>
         )}
@@ -87,10 +89,10 @@ const StationDetailScreen: React.FC = () => {
 
       {/* LED Panels */}
       <View style={styles.sectionCard}>
-        <Text style={styles.sectionTitle}>LED Panels ({selectedStation.panels.length})</Text>
+        <Text style={styles.sectionTitle}>{t('station.panels')} ({selectedStation.panels.length})</Text>
         
         {selectedStation.panels.length === 0 ? (
-          <Text style={styles.emptyText}>No LED panels configured</Text>
+          <Text style={styles.emptyText}>{t('station.noPanels')}</Text>
         ) : (
           selectedStation.panels.map((panel) => (
             <View key={panel.id} style={styles.panelCard}>
@@ -98,21 +100,21 @@ const StationDetailScreen: React.FC = () => {
               
               <View style={styles.pricesContainer}>
                 <View style={styles.priceItem}>
-                  <Text style={styles.priceLabel}>Regular</Text>
+                  <Text style={styles.priceLabel}>{t('prices.regular')}</Text>
                   <Text style={styles.priceValue}>
                     {formatCurrency(panel.currentPrices.regular)}
                   </Text>
                 </View>
                 
                 <View style={styles.priceItem}>
-                  <Text style={styles.priceLabel}>Premium</Text>
+                  <Text style={styles.priceLabel}>{t('prices.premium')}</Text>
                   <Text style={styles.priceValue}>
                     {formatCurrency(panel.currentPrices.premium)}
                   </Text>
                 </View>
                 
                 <View style={styles.priceItem}>
-                  <Text style={styles.priceLabel}>Diesel</Text>
+                  <Text style={styles.priceLabel}>{t('prices.diesel')}</Text>
                   <Text style={styles.priceValue}>
                     {formatCurrency(panel.currentPrices.diesel)}
                   </Text>
@@ -135,14 +137,14 @@ const StationDetailScreen: React.FC = () => {
           style={[styles.actionButton, styles.primaryButton]}
           onPress={handleEditPrices}
         >
-          <Text style={styles.primaryButtonText}>Update Prices</Text>
+          <Text style={styles.primaryButtonText}>{t('prices.update')}</Text>
         </TouchableOpacity>
         
         <TouchableOpacity
           style={[styles.actionButton, styles.secondaryButton]}
           onPress={handleRefresh}
         >
-          <Text style={styles.secondaryButtonText}>Refresh Status</Text>
+          <Text style={styles.secondaryButtonText}>{t('dashboard.refresh')}</Text>
         </TouchableOpacity>
       </View>
     </ScrollView>

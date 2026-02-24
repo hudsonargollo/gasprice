@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { apiClient } from '../services/apiClient';
+import { useTranslation } from '../locales';
 
 interface Location {
   stationInfo: {
@@ -49,6 +50,7 @@ interface ClientInfo {
 export const FactoryProvisioningScreen: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [step, setStep] = useState(1);
+  const { t } = useTranslation();
   
   const [clientInfo, setClientInfo] = useState<ClientInfo>({
     companyName: '',
@@ -137,15 +139,15 @@ export const FactoryProvisioningScreen: React.FC = () => {
         });
         
         if (!response.data.readyForProvisioning) {
-          Alert.alert('Device Test Failed', `Location ${i + 1} devices failed testing`);
+          Alert.alert(t('factory.deviceTestFailed'), `${t('factory.location')} ${i + 1} ${t('factory.deviceTestFailed').toLowerCase()}`);
           return;
         }
       }
       
-      Alert.alert('Success', 'All devices tested successfully!');
+      Alert.alert(t('common.success'), t('factory.deviceTestSuccess'));
       setStep(3);
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Device testing failed');
+      Alert.alert(t('common.error'), error.message || t('factory.deviceTestFailed'));
     } finally {
       setLoading(false);
     }
@@ -162,11 +164,11 @@ export const FactoryProvisioningScreen: React.FC = () => {
       if (response.data.success) {
         const { client } = response.data;
         Alert.alert(
-          'Provisioning Complete!',
-          `Client created successfully!\n\nUsername: ${client.username}\nPassword: ${client.password}\n\nCompany: ${client.companyName}`,
+          t('factory.provisioningComplete'),
+          `${t('factory.clientCreated')}\n\n${t('factory.username')} ${client.username}\n${t('factory.password')} ${client.password}\n\n${t('factory.company')} ${client.companyName}`,
           [
             {
-              text: 'OK',
+              text: t('common.ok'),
               onPress: () => {
                 // Reset form
                 setStep(1);
@@ -185,7 +187,7 @@ export const FactoryProvisioningScreen: React.FC = () => {
         );
       }
     } catch (error: any) {
-      Alert.alert('Error', error.message || 'Provisioning failed');
+      Alert.alert(t('common.error'), error.message || t('factory.provisioningFailed'));
     } finally {
       setLoading(false);
     }
@@ -193,25 +195,25 @@ export const FactoryProvisioningScreen: React.FC = () => {
 
   const renderStep1 = () => (
     <View style={styles.stepContainer}>
-      <Text style={styles.stepTitle}>Step 1: Client Information</Text>
+      <Text style={styles.stepTitle}>{t('factory.step1')}</Text>
       
       <TextInput
         style={styles.input}
-        placeholder="Company Name *"
+        placeholder={t('factory.companyName')}
         value={clientInfo.companyName}
         onChangeText={(text) => setClientInfo({ ...clientInfo, companyName: text })}
       />
       
       <TextInput
         style={styles.input}
-        placeholder="Contact Name"
+        placeholder={t('factory.contactName')}
         value={clientInfo.contactName}
         onChangeText={(text) => setClientInfo({ ...clientInfo, contactName: text })}
       />
       
       <TextInput
         style={styles.input}
-        placeholder="Email"
+        placeholder={t('factory.email')}
         value={clientInfo.email}
         onChangeText={(text) => setClientInfo({ ...clientInfo, email: text })}
         keyboardType="email-address"
@@ -219,7 +221,7 @@ export const FactoryProvisioningScreen: React.FC = () => {
       
       <TextInput
         style={styles.input}
-        placeholder="Phone"
+        placeholder={t('factory.phone')}
         value={clientInfo.phone}
         onChangeText={(text) => setClientInfo({ ...clientInfo, phone: text })}
         keyboardType="phone-pad"
@@ -227,7 +229,7 @@ export const FactoryProvisioningScreen: React.FC = () => {
       
       <TextInput
         style={styles.input}
-        placeholder="Address"
+        placeholder={t('factory.address')}
         value={clientInfo.address}
         onChangeText={(text) => setClientInfo({ ...clientInfo, address: text })}
         multiline
@@ -235,7 +237,7 @@ export const FactoryProvisioningScreen: React.FC = () => {
       
       <TextInput
         style={styles.input}
-        placeholder="Items Purchased"
+        placeholder={t('factory.itemsPurchased')}
         value={clientInfo.itemsPurchased.toString()}
         onChangeText={(text) => setClientInfo({ ...clientInfo, itemsPurchased: parseInt(text) || 1 })}
         keyboardType="numeric"
@@ -246,59 +248,59 @@ export const FactoryProvisioningScreen: React.FC = () => {
         onPress={() => setStep(2)}
         disabled={!clientInfo.companyName}
       >
-        <Text style={styles.buttonText}>Next: Locations</Text>
+        <Text style={styles.buttonText}>{t('factory.next')}</Text>
       </TouchableOpacity>
     </View>
   );
 
   const renderStep2 = () => (
     <View style={styles.stepContainer}>
-      <Text style={styles.stepTitle}>Step 2: Location Setup</Text>
+      <Text style={styles.stepTitle}>{t('factory.step2')}</Text>
       
       {locations.map((location, index) => (
         <View key={index} style={styles.locationContainer}>
-          <Text style={styles.locationTitle}>Location {index + 1}</Text>
+          <Text style={styles.locationTitle}>{t('factory.location')} {index + 1}</Text>
           
           <TextInput
             style={styles.input}
-            placeholder="Station Name *"
+            placeholder={t('factory.stationName')}
             value={location.stationInfo.name}
             onChangeText={(text) => updateLocation(index, 'stationInfo.name', text)}
           />
           
           <TextInput
             style={styles.input}
-            placeholder="Address"
+            placeholder={t('factory.stationAddress')}
             value={location.stationInfo.location?.address || ''}
             onChangeText={(text) => updateLocation(index, 'stationInfo.location.address', text)}
           />
           
-          <Text style={styles.sectionTitle}>MikroTik Device</Text>
+          <Text style={styles.sectionTitle}>{t('factory.mikrotikDevice')}</Text>
           <TextInput
             style={styles.input}
-            placeholder="Serial Number *"
+            placeholder={t('factory.serialNumber')}
             value={location.devices.mikrotik.serialNumber}
             onChangeText={(text) => updateLocation(index, 'devices.mikrotik.serialNumber', text)}
           />
           
           <TextInput
             style={styles.input}
-            placeholder="MAC Address *"
+            placeholder={t('factory.macAddress')}
             value={location.devices.mikrotik.macAddress}
             onChangeText={(text) => updateLocation(index, 'devices.mikrotik.macAddress', text)}
           />
           
-          <Text style={styles.sectionTitle}>Huidu Device</Text>
+          <Text style={styles.sectionTitle}>{t('factory.huiduDevice')}</Text>
           <TextInput
             style={styles.input}
-            placeholder="Serial Number *"
+            placeholder={t('factory.serialNumber')}
             value={location.devices.huidu.serialNumber}
             onChangeText={(text) => updateLocation(index, 'devices.huidu.serialNumber', text)}
           />
           
           <TextInput
             style={styles.input}
-            placeholder="MAC Address *"
+            placeholder={t('factory.macAddress')}
             value={location.devices.huidu.macAddress}
             onChangeText={(text) => updateLocation(index, 'devices.huidu.macAddress', text)}
           />
@@ -306,12 +308,12 @@ export const FactoryProvisioningScreen: React.FC = () => {
       ))}
       
       <TouchableOpacity style={styles.addButton} onPress={addLocation}>
-        <Text style={styles.addButtonText}>+ Add Another Location</Text>
+        <Text style={styles.addButtonText}>{t('factory.addLocation')}</Text>
       </TouchableOpacity>
       
       <View style={styles.buttonRow}>
         <TouchableOpacity style={styles.backButton} onPress={() => setStep(1)}>
-          <Text style={styles.buttonText}>Back</Text>
+          <Text style={styles.buttonText}>{t('factory.back')}</Text>
         </TouchableOpacity>
         
         <TouchableOpacity
@@ -322,7 +324,7 @@ export const FactoryProvisioningScreen: React.FC = () => {
           {loading ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.buttonText}>Test Devices</Text>
+            <Text style={styles.buttonText}>{t('factory.testDevices')}</Text>
           )}
         </TouchableOpacity>
       </View>
@@ -331,22 +333,22 @@ export const FactoryProvisioningScreen: React.FC = () => {
 
   const renderStep3 = () => (
     <View style={styles.stepContainer}>
-      <Text style={styles.stepTitle}>Step 3: Complete Provisioning</Text>
+      <Text style={styles.stepTitle}>{t('factory.step3')}</Text>
       
       <Text style={styles.summaryText}>
-        Ready to provision {clientInfo.companyName} with {locations.length} location(s).
+        {t('factory.readyToProvision')} {clientInfo.companyName} com {locations.length} local(is).
       </Text>
       
       <View style={styles.summaryContainer}>
-        <Text style={styles.summaryTitle}>Summary:</Text>
-        <Text>Company: {clientInfo.companyName}</Text>
-        <Text>Locations: {locations.length}</Text>
-        <Text>Total Devices: {locations.length * 2} (MikroTik + Huidu per location)</Text>
+        <Text style={styles.summaryTitle}>{t('factory.summary')}</Text>
+        <Text>{t('factory.company')} {clientInfo.companyName}</Text>
+        <Text>{t('factory.locations')} {locations.length}</Text>
+        <Text>{t('factory.totalDevices')} {locations.length * 2} (MikroTik + Huidu por local)</Text>
       </View>
       
       <View style={styles.buttonRow}>
         <TouchableOpacity style={styles.backButton} onPress={() => setStep(2)}>
-          <Text style={styles.buttonText}>Back</Text>
+          <Text style={styles.buttonText}>{t('factory.back')}</Text>
         </TouchableOpacity>
         
         <TouchableOpacity
@@ -357,7 +359,7 @@ export const FactoryProvisioningScreen: React.FC = () => {
           {loading ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.buttonText}>Complete Provisioning</Text>
+            <Text style={styles.buttonText}>{t('factory.completeProvisioning')}</Text>
           )}
         </TouchableOpacity>
       </View>
@@ -366,7 +368,7 @@ export const FactoryProvisioningScreen: React.FC = () => {
 
   return (
     <ScrollView style={styles.container}>
-      <Text style={styles.title}>🏭 Factory Provisioning</Text>
+      <Text style={styles.title}>{t('factory.title')}</Text>
       
       <View style={styles.progressContainer}>
         <View style={[styles.progressStep, step >= 1 && styles.progressStepActive]}>
