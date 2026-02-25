@@ -9,6 +9,11 @@ export class AuthService {
   private jwtExpiresIn: string;
 
   constructor() {
+    // Ensure environment variables are loaded
+    if (!process.env.JWT_SECRET) {
+      require('dotenv').config({ path: '/opt/applications/fuelprice-pro/.env' });
+    }
+    
     this.jwtSecret = process.env.JWT_SECRET || 'fallback-secret-key-change-in-production';
     this.jwtExpiresIn = process.env.JWT_EXPIRES_IN || '24h';
     
