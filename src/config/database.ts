@@ -1,6 +1,7 @@
 import { Pool, PoolConfig } from 'pg';
 import { logger } from '../utils/logger';
 import { createMockPool } from '../test/mockDatabase';
+import { initMockAdmin, checkMockAdmin } from '../scripts/init-mock-admin';
 
 let pool: Pool;
 let usingMockDatabase = false;
@@ -24,6 +25,9 @@ export async function connectDatabase(): Promise<void> {
       pool = createMockPool();
       usingMockDatabase = true;
       logger.info('Mock database schema initialized');
+      
+      // Initialize mock database with admin user
+      await initializeMockData();
       return;
     }
 
@@ -46,6 +50,9 @@ export async function connectDatabase(): Promise<void> {
     pool = createMockPool();
     usingMockDatabase = true;
     logger.info('Mock database schema initialized');
+    
+    // Initialize mock database with admin user
+    await initializeMockData();
   }
 }
 
@@ -176,5 +183,22 @@ export async function closeDatabase(): Promise<void> {
   if (pool) {
     await pool.end();
     logger.info('Database connection closed');
+  }
+}
+async function initializeMockData(): Promise<void> {
+  try {
+    // Check if admin user already exists
+    const adminExists = await checkMockAdmin();
+    
+    if (!adminExists) {
+      // Create admin user
+      await initMockAdmin();
+      logger.info('Mock database initialized with admin user');
+    } else {
+      logger.info('Mock database admin user already exists');
+    }
+  } catch (error) {
+    logger.error('Failed to initialize mock data:', error);
+    throw error;
   }
 }

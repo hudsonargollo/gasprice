@@ -1,0 +1,63 @@
+MANUAL VPS UPDATE COMMANDS
+==========================
+
+The backend code has been fixed and pushed to GitHub. 
+You need to run these commands on your VPS to update the application:
+
+1. SSH into your VPS:
+   ssh root@vmi3098793.contaboserver.net
+
+2. Navigate to the application directory:
+   cd /opt/applications/fuelprice-pro
+
+3. Pull the latest code:
+   git pull origin main
+
+4. Install dependencies:
+   npm install
+
+5. Build the application:
+   npm run build
+
+6. Restart the application:
+   pm2 restart fuelprice-backend
+
+7. Check the application status:
+   pm2 status
+
+8. Test the application:
+   curl https://pricepro.clubemkt.digital/health
+
+9. Test the factory provisioning endpoints:
+   # Get admin token
+   TOKEN=$(curl -s -X POST https://pricepro.clubemkt.digital/api/auth/login \
+     -H "Content-Type: application/json" \
+     -d '{"username":"admin","password":"admin123"}' | \
+     grep -o '"token":"[^"]*"' | cut -d'"' -f4)
+   
+   echo "Token: $TOKEN"
+   
+   # Test wizard steps endpoint
+   curl -H "Authorization: Bearer $TOKEN" \
+     https://pricepro.clubemkt.digital/api/factory/wizard/steps
+   
+   # Test device testing endpoint
+   curl -X POST -H "Authorization: Bearer $TOKEN" \
+     -H "Content-Type: application/json" \
+     -d '{"mikrotikSerial":"TEST123","huiduSerial":"TEST456"}' \
+     https://pricepro.clubemkt.digital/api/factory/test-devices
+
+WHAT WAS FIXED:
+===============
+- Fixed TypeScript compilation error in factory-provisioning.ts
+- Fixed missing method call (generateMikroTikConfig -> generateDeviceConfig)
+- Added proper imports for MikroTikDeviceModel
+- All factory provisioning routes should now work correctly
+
+EXPECTED RESULT:
+================
+After running these commands, the mobile app's "Testar dispositivos" button 
+should work correctly and return device test results instead of "route not found".
+
+The factory provisioning wizard should be fully functional for creating clients
+and configuring devices.

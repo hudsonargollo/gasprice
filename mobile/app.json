@@ -30,13 +30,17 @@
         "ACCESS_NETWORK_STATE"
       ]
     },
-    "platforms": ["ios", "android"],
+    "platforms": [
+      "ios",
+      "android"
+    ],
     "scheme": "engefilconnect",
     "extra": {
       "eas": {
-        "projectId": "engefil-connect-2024"
+        "projectId": "9b0ef45c-7562-4d3f-989b-f05a0f5ac151"
       }
-    }
+    },
+    "owner": "clubemkt"
   },
   "name": "EngefilConnect",
   "displayName": "Engefil Connect"

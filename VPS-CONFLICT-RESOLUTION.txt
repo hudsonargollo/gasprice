@@ -1,0 +1,59 @@
+VPS GIT CONFLICT RESOLUTION
+===========================
+
+You have local changes on the VPS that conflict with the GitHub updates.
+Run these commands to resolve the conflict:
+
+1. First, check what changes exist locally:
+   git status
+   git diff src/routes/factory-provisioning.ts
+
+2. Stash the local changes (save them temporarily):
+   git stash
+
+3. Pull the latest code:
+   git pull origin main
+
+4. Check if the stashed changes are needed:
+   git stash show -p
+
+5. If the stashed changes are not needed (likely), just continue.
+   If you need to merge them:
+   git stash pop
+
+6. Continue with the deployment:
+   npm install
+   npm run build
+   pm2 restart fuelprice-backend
+   pm2 status
+
+7. Test the application:
+   curl https://pricepro.clubemkt.digital/health
+
+8. Test factory provisioning:
+   TOKEN=$(curl -s -X POST https://pricepro.clubemkt.digital/api/auth/login \
+     -H "Content-Type: application/json" \
+     -d '{"username":"admin","password":"admin123"}' | \
+     grep -o '"token":"[^"]*"' | cut -d'"' -f4)
+   
+   echo "Token: $TOKEN"
+   
+   curl -H "Authorization: Bearer $TOKEN" \
+     https://pricepro.clubemkt.digital/api/factory/wizard/steps
+   
+   curl -X POST -H "Authorization: Bearer $TOKEN" \
+     -H "Content-Type: application/json" \
+     -d '{"mikrotikSerial":"TEST123","huiduSerial":"TEST456"}' \
+     https://pricepro.clubemkt.digital/api/factory/test-devices
+
+ALTERNATIVE (if you want to discard local changes completely):
+=============================================================
+If you're sure the local changes aren't important:
+
+   git reset --hard HEAD
+   git pull origin main
+   npm install
+   npm run build
+   pm2 restart fuelprice-backend
+
+This will discard all local changes and use the GitHub version.

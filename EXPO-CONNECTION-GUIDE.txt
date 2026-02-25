@@ -1,0 +1,53 @@
+EXPO TUNNEL CONNECTION GUIDE
+============================
+
+✅ TUNNEL STATUS: WORKING
+✅ QR CODE: Available in terminal
+✅ PUBLIC URL: http://7omfpai.anonymous.8081.exp.direct
+
+CONNECTION OPTIONS:
+==================
+
+1. EXPO GO APP (Recommended):
+   - Download "Expo Go" from App Store/Play Store
+   - Open Expo Go app
+   - Scan the QR code from terminal
+   - Wait for app to load (may take 30-60 seconds first time)
+
+2. MANUAL URL IN EXPO GO:
+   - Open Expo Go app
+   - Tap "Enter URL manually"
+   - Enter: exp://7omfpai.anonymous.8081.exp.direct
+   - Tap "Connect"
+
+3. SWITCH TO EXPO GO MODE:
+   - In terminal, press 's' key
+   - This switches from development build to Expo Go mode
+   - Scan new QR code that appears
+
+4. WEB VERSION (for testing):
+   - In terminal, press 'w' key
+   - Opens web version in browser
+   - Good for quick testing
+
+TROUBLESHOOTING TIMEOUTS:
+========================
+
+If connection times out:
+1. Check internet connection
+2. Try closing and reopening Expo Go app
+3. Clear Expo Go app cache
+4. Try web version first (press 'w')
+5. Restart tunnel if needed
+
+TESTING THE FACTORY PROVISIONING:
+=================================
+Once connected, you can test:
+- Login with admin/admin123
+- Navigate to Factory Provisioning
+- Try "Testar dispositivos" - should work now!
+
+The backend routes are fixed and ready for testing.
+
+CURRENT TUNNEL URL: http://7omfpai.anonymous.8081.exp.direct
+This URL works from anywhere in the world!
