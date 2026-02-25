@@ -16,7 +16,7 @@ import { factoryProvisioningRoutes } from './routes/factory-provisioning';
 import { VPNMonitorService } from './services/VPNMonitorService';
 
 // Load environment variables
-dotenv.config();
+dotenv.config({ path: '/opt/applications/fuelprice-pro/.env' });
 
 const app = express();
 const server = createServer(app);
