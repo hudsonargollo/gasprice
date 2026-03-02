@@ -239,14 +239,15 @@ app.get('/privacy-policy', (req, res) => {
             <p>Para questões sobre privacidade, dúvidas ou exercício de direitos:</p>
             
             <p><strong>Encarregado de Dados (DPO):</strong><br>
-            Email: privacidade@engefil.com.br<br>
-            Telefone: [Telefone da Engefil]</p>
+            Email: engefil@hotmail.com<br>
+            Telefone: (73) 99824-5334</p>
             
             <p><strong>Suporte Técnico:</strong><br>
-            Email: suporte@engefil.com.br</p>
+            Email: engefil@hotmail.com</p>
             
             <p><strong>Endereço:</strong><br>
-            [Endereço da Engefil]</p>
+            RUA 22 de Junho, DISTRITO INDUSTRIAL RODUZINDO SANTOS<br>
+            Barra do Choça - BA</p>
         </div>
 
         <div class="last-updated">
